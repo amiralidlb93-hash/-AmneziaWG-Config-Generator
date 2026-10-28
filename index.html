@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سازنده کانفیگ AmneziaWG</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl-fast.min.js"></script>
+<style>
+:root{--bg:#eef1f4;--card:#fff;--ink:#14202b;--mute:#5c6b78;--line:#d3dbe2;--acc:#0e7c86;--accink:#fff;--code:#101c26;--codeink:#c9e7ea}
+@media (prefers-color-scheme:dark){:root{--bg:#0d151c;--card:#15212b;--ink:#e6edf2;--mute:#92a3b0;--line:#27384580;--acc:#3fc1cc;--accink:#06262a;--code:#0a1218;--codeink:#bfe6ea}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.8 Vazirmatn,Tahoma,sans-serif;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+main{max-width:720px;margin:0 auto;padding:28px 16px 48px}
+h1{font-size:28px;font-weight:800;margin:0 0 4px}
+.sub{color:var(--mute);margin:0 0 24px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:16px}
+label{display:block;font-weight:600;margin:12px 0 4px}
+label:first-child{margin-top:0}
+input,textarea,select{width:100%;font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px;padding:8px 10px;direction:ltr;text-align:left}
+input:focus,textarea:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 120px}
+.row.fit>*{flex:0 0 auto}
+.seg{display:flex;gap:0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg label{margin:0;flex:1;text-align:center;padding:6px;cursor:pointer;font-weight:400}
+.seg input{display:none}
+.seg input:checked+span{font-weight:800;color:var(--acc)}
+.seg label:has(input:checked){background:color-mix(in srgb,var(--acc) 14%,transparent)}
+.chk{display:flex;gap:8px;align-items:center;font-weight:600;margin-top:14px;cursor:pointer}
+.chk input{width:auto}
+button{font:600 15px Vazirmatn,Tahoma,sans-serif;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink);padding:8px 14px;cursor:pointer}
+button.main{background:var(--acc);color:var(--accink);border-color:var(--acc);width:100%;padding:12px;font-size:17px;margin-top:6px}
+button:disabled{opacity:.6;cursor:wait}
+pre{direction:ltr;text-align:left;background:var(--code);color:var(--codeink);border-radius:8px;padding:14px;overflow-x:auto;font:13px/1.6 ui-monospace,Consolas,monospace;margin:0 0 10px;white-space:pre}
+.err{color:#c0392b;font-weight:600;margin-top:10px}
+.hint{color:var(--mute);font-size:14px;margin:6px 0 0}
+details summary{cursor:pointer;font-weight:600}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<h1>سازنده کانفیگ AmneziaWG</h1>
+<p class="sub">یک دستگاه WARP تازه ثبت می‌شود و کانفیگ آماده‌ی اپ AmneziaVPN ساخته می‌شود. کلیدها در مرورگر خودتان ساخته می‌شوند.</p>
+
+<div class="panel">
+  <label for="ep">Endpoint (آی‌پی:پورت)</label>
+  <div class="row">
+    <input id="ep" placeholder="engage.cloudflareclient.com:2408" style="flex:3 1 220px">
+    <button id="rnd" type="button" style="flex:0 0 auto">آی‌پی تصادفی</button>
+  </div>
+  <p class="hint">خالی بگذارید تا از آدرس پیش‌فرض WARP استفاده شود.</p>
+
+  <label>حالت پکت‌های زباله (Junk)</label>
+  <div class="seg">
+    <label><input type="radio" name="mode" value="light" checked><span>سبک</span></label>
+    <label><input type="radio" name="mode" value="heavy"><span>سنگین</span></label>
+    <label><input type="radio" name="mode" value="custom"><span>دلخواه</span></label>
+  </div>
+  <div class="row" id="custom" hidden style="margin-top:8px">
+    <div><label for="jc">Jc</label><input id="jc" type="number" value="4"></div>
+    <div><label for="jmin">Jmin</label><input id="jmin" type="number" value="40"></div>
+    <div><label for="jmax">Jmax</label><input id="jmax" type="number" value="70"></div>
+  </div>
+
+  <label for="mtu">MTU</label>
+  <input id="mtu" type="number" value="1280">
+
+  <label class="chk"><input id="v15" type="checkbox"> فعال‌سازی پارامترهای Amnezia 1.5 (I1 تا I5)</label>
+  <div id="ipar" hidden>
+    <label for="i1">I1</label><input id="i1" value="&lt;r 100&gt;">
+    <label for="i2">I2</label><input id="i2">
+    <label for="i3">I3</label><input id="i3">
+    <label for="i4">I4</label><input id="i4">
+    <label for="i5">I5</label><input id="i5">
+    <p class="hint">نام پارامتر باید با حرف بزرگ (I1) باشد. فیلد خالی در کانفیگ نمی‌آید. مقدار پیش‌فرض فقط یک نمونه است؛ اگر کار نکرد مقدار دیگری بدهید.</p>
+  </div>
+
+  <label for="proxy">آدرس پروکسی (اختیاری)</label>
+  <input id="proxy" placeholder="https://your-worker.workers.dev">
+  <p class="hint">اگر مرورگر درخواست مستقیم به Cloudflare را بلاک کرد (خطای CORS)، یک Worker بسازید. کدش پایین صفحه است.</p>
+
+  <button id="go" class="main" type="button">ساخت کانفیگ</button>
+  <div id="err" class="err" hidden></div>
+</div>
+
+<div class="panel" id="out" hidden>
+  <pre id="cfg"></pre>
+  <div class="row fit">
+    <button id="copy" type="button">کپی</button>
+    <button id="dl" type="button">دانلود فایل</button>
+  </div>
+  <p class="hint">در AmneziaVPN دکمه + را بزنید، «Insert» یا «File with connection settings» را انتخاب کنید.</p>
+</div>
+
+<details class="panel">
+  <summary>کد Cloudflare Worker برای پروکسی</summary>
+<pre>export default {
+  async fetch(req) {
+    const cors = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    };
+    if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
+    const r = await fetch('https://api.cloudflareclient.com/v0a2158/reg', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'okhttp/3.12.1',
+        'CF-Client-Version': 'a-6.10-2158'
+      },
+      body: await req.text()
+    });
+    return new Response(r.body, {
+      status: r.status,
+      headers: { ...cors, 'Content-Type': 'application/json' }
+    });
+  }
+}</pre>
+</details>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const PORTS = [500,854,859,864,878,880,890,891,894,903,908,928,934,939,942,943,945,946,955,968,987,988,1002,1010,1014,1018,1070,1074,1180,1387,1701,1843,2371,2408,2506,3138,3476,3581,3854,4177,4198,4233,4500,5279,5956,7103,7152,7156,7281,7559,8319,8742,8854,8886];
+const PRESET = { light: [4, 40, 70], heavy: [120, 23, 911] };
+const rnd = n => Math.floor(Math.random() * n);
+const b64 = u => btoa(String.fromCharCode(...u));
+const mode = () => document.querySelector('input[name=mode]:checked').value;
+
+$('rnd').onclick = () => {
+  const ip = Math.random() < .5 ? `162.159.${192 + rnd(4)}.${1 + rnd(254)}` : `188.114.${96 + rnd(4)}.${1 + rnd(254)}`;
+  $('ep').value = ip + ':' + PORTS[rnd(PORTS.length)];
+};
+document.querySelectorAll('input[name=mode]').forEach(r => r.onchange = () => $('custom').hidden = mode() !== 'custom');
+$('v15').onchange = () => $('ipar').hidden = !$('v15').checked;
+
+function showErr(m) { $('err').textContent = m; $('err').hidden = !m; }
+
+$('go').onclick = async () => {
+  showErr(''); $('go').disabled = true; $('out').hidden = true;
+  try {
+    const kp = nacl.box.keyPair();
+    const body = { key: b64(kp.publicKey), install_id: '', fcm_token: '', tos: new Date().toISOString(), model: 'PC', type: 'Android', serial_number: '', locale: 'en_US' };
+    const url = $('proxy').value.trim() || 'https://api.cloudflareclient.com/v0a2158/reg';
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Client-Version': 'a-6.10-2158' }, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error('پاسخ Cloudflare: ' + res.status);
+    const j = await res.json();
+    const c = (j.result || j).config;
+    if (!c || !c.peers || !c.peers[0] || !c.interface) throw new Error('پاسخ Cloudflare ناقص بود. دوباره امتحان کنید.');
+    const peer = c.peers[0], a = c.interface.addresses;
+    const ep = $('ep').value.trim() || 'engage.cloudflareclient.com:2408';
+    const [jc, jmin, jmax] = mode() === 'custom' ? [$('jc').value, $('jmin').value, $('jmax').value] : PRESET[mode()];
+    const L = [
+      '[Interface]',
+      'PrivateKey = ' + b64(kp.secretKey),
+      `Address = ${a.v4}/32, ${a.v6}/128`,
+      'DNS = 1.1.1.1, 1.0.0.1, 2606:4700:4700::1111',
+      'MTU = ' + $('mtu').value,
+      `Jc = ${jc}`, `Jmin = ${jmin}`, `Jmax = ${jmax}`,
+      'S1 = 0', 'S2 = 0', 'H1 = 1', 'H2 = 2', 'H3 = 3', 'H4 = 4'
+    ];
+    if ($('v15').checked) for (let i = 1; i <= 5; i++) { const v = $('i' + i).value.trim(); if (v) L.push(`I${i} = ${v}`); }
+    L.push('', '[Peer]', 'PublicKey = ' + peer.public_key, 'AllowedIPs = 0.0.0.0/0, ::/0', 'Endpoint = ' + ep, 'PersistentKeepalive = 25');
+    $('cfg').textContent = L.join('\n');
+    $('out').hidden = false;
+    $('out').scrollIntoView({ behavior: 'smooth' });
+  } catch (e) {
+    showErr(e instanceof TypeError
+      ? 'درخواست مستقیم بلاک شد (احتمالاً CORS). یک Worker بسازید و آدرسش را در فیلد پروکسی بگذارید.'
+      : e.message);
+  } finally { $('go').disabled = false; }
+};
+
+$('copy').onclick = async () => {
+  try { await navigator.clipboard.writeText($('cfg').textContent); $('copy').textContent = 'کپی شد'; setTimeout(() => $('copy').textContent = 'کپی', 1500); } catch { showErr('کپی انجام نشد؛ متن را دستی انتخاب کنید.'); }
+};
+$('dl').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([$('cfg').textContent], { type: 'text/plain' }));
+  a.download = 'amnezia-warp.conf'; a.click(); URL.revokeObjectURL(a.href);
+};
+</script>
+</body>
+</html>

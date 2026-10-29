@@ -36,6 +36,7 @@ pre{direction:ltr;text-align:left;background:var(--code);color:var(--codeink);bo
 .err{color:#c0392b;font-weight:600;margin-top:10px}
 .hint{color:var(--mute);font-size:14px;margin:6px 0 0}
 details summary{cursor:pointer;font-weight:600}
+.chip{direction:ltr;font:12px ui-monospace,Consolas,monospace;padding:4px 8px}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -51,6 +52,9 @@ details summary{cursor:pointer;font-weight:600}
     <button id="rnd" type="button" style="flex:0 0 auto">آی‌پی تصادفی</button>
   </div>
   <p class="hint">خالی بگذارید تا از آدرس پیش‌فرض WARP استفاده شود.</p>
+  <button id="lst" type="button" style="margin-top:8px">لیست آی‌پی‌ها برای امتحان</button>
+  <div id="chips" class="row fit" style="margin-top:8px" hidden></div>
+  <p id="chiphint" class="hint" hidden>روی هر آی‌پی بزنید تا در فیلد بالا قرار بگیرد. کانفیگ بسازید، وصل شوید و اگر کار نکرد سراغ بعدی بروید. آدرس‌های IPv6 فقط وقتی کار می‌کنند که اینترنت شما IPv6 داشته باشد.</p>
 
   <label>حالت پکت‌های زباله (Junk)</label>
   <div class="seg">
@@ -130,9 +134,33 @@ const rnd = n => Math.floor(Math.random() * n);
 const b64 = u => btoa(String.fromCharCode(...u));
 const mode = () => document.querySelector('input[name=mode]:checked').value;
 
-$('rnd').onclick = () => {
-  const ip = Math.random() < .5 ? `162.159.${192 + rnd(4)}.${1 + rnd(254)}` : `188.114.${96 + rnd(4)}.${1 + rnd(254)}`;
-  $('ep').value = ip + ':' + PORTS[rnd(PORTS.length)];
+const RANGES = ['162.159.192', '162.159.193', '162.159.195', '188.114.96', '188.114.97', '188.114.98', '188.114.99'];
+const FIXED = [
+  'engage.cloudflareclient.com:2408',
+  '162.159.192.1:2408', '162.159.193.1:2408', '162.159.195.1:2408',
+  '188.114.96.1:2408', '188.114.97.1:2408', '188.114.98.1:2408', '188.114.99.1:2408',
+  '162.159.193.1:500', '162.159.193.1:1701', '162.159.193.1:4500',
+  '188.114.97.1:500', '188.114.98.1:1701', '188.114.99.1:4500',
+  '[2606:4700:d0::a29f:c001]:2408', '[2606:4700:d0::a29f:c101]:2408', '[2606:4700:d0::a29f:c301]:2408'
+];
+const h4 = () => rnd(65536).toString(16);
+const V6 = ['2606:4700:d0:0', '2606:4700:d1:0', '2606:4700:100:' + 'x'];
+const randEp = () => `${RANGES[rnd(RANGES.length)]}.${1 + rnd(254)}:${PORTS[rnd(PORTS.length)]}`;
+const randEp6 = () => {
+  const p = V6[rnd(V6.length)].replace(':x', ':' + h4());
+  return `[${p}:${h4()}:${h4()}:${h4()}:${h4()}]:${PORTS[rnd(PORTS.length)]}`;
+};
+$('rnd').onclick = () => { $('ep').value = randEp(); };
+$('lst').onclick = () => {
+  const box = $('chips');
+  box.innerHTML = '';
+  [...FIXED, ...Array.from({ length: 20 }, randEp), ...Array.from({ length: 6 }, randEp6)].forEach(v => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = v;
+    b.onclick = () => { $('ep').value = v; };
+    box.appendChild(b);
+  });
+  box.hidden = false; $('chiphint').hidden = false;
 };
 document.querySelectorAll('input[name=mode]').forEach(r => r.onchange = () => $('custom').hidden = mode() !== 'custom');
 $('v15').onchange = () => $('ipar').hidden = !$('v15').checked;
